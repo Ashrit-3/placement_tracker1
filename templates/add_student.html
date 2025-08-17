@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Student</title>
+</head>
+<body>
+    <h2>Add Student</h2>
+    <form method="POST" action="/add_student">
+        <label>Name:</label>
+        <input type="text" name="name" required><br><br>
+        <label>Branch:</label>
+        <input type="text" name="branch" required><br><br>
+        <label>CGPA:</label>
+        <input type="number" step="0.01" name="cgpa" required><br><br>
+        <label>Placed:</label>
+        <select name="placed" required>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select><br><br>
+        <button type="submit">Add</button>
+    </form>
+    <a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>

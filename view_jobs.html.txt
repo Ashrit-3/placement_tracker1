@@ -1,0 +1,7 @@
+<h2>Jobs List</h2>
+<ul>
+    {% for job in jobs %}
+        <li>{{ job['title'] }} at {{ job['company'] }}</li>
+    {% endfor %}
+</ul>
+<a href="/dashboard">Back to Dashboard</a>
