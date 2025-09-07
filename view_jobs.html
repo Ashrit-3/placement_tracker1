@@ -1,7 +1,40 @@
-<h2>Jobs List</h2>
-<ul>
-    {% for job in jobs %}
-        <li>{{ job['title'] }} at {{ job['company'] }}</li>
-    {% endfor %}
-</ul>
-<a href="/dashboard">Back to Dashboard</a>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jobs Matching Your Skills</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/home">Placement Tracker</a>
+        <a href="/logout" class="btn btn-danger">Logout</a>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Jobs Matching Your Skills 💼</h2>
+
+    {% if jobs %}
+        <div class="row">
+            {% for job in jobs %}
+            <div class="col-md-6">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ job['title'] }}</h5>
+                        <p class="card-text"><strong>Company:</strong> {{ job['company_name'] }}</p>
+                        <p class="card-text"><strong>Location:</strong> {{ job['location'] }}</p>
+                        <a href="{{ job['url'] }}" target="_blank" class="btn btn-primary">Apply Now</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning">No jobs match your skills right now.</div>
+    {% endif %}
+</div>
+
+</body>
+</html>

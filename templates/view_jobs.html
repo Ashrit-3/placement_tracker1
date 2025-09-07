@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Jobs</h2>
+{% if jobs %}
+<ul>
+    {% for job in jobs %}
+    <li>{{ job.title }} at {{ job.company }} (Skills: {{ job.skills_required }})</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No jobs available at the moment.</p>
+{% endif %}
+{% endblock %}

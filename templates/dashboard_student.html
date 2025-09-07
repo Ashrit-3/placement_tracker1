@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+</head>
+<body>
+    <h2>Welcome, {{ session['username'] }}!</h2>
+    <h3>Jobs Matching Your Skills</h3>
+
+    {% if jobs %}
+        <ul>
+        {% for job in jobs %}
+            <li>
+                <strong>{{ job['title'] }}</strong> at <em>{{ job['company'] }}</em><br>
+                {{ job['description'] }}<br>
+                <b>Required Skills:</b> {{ job['required_skills'] }}
+            </li>
+            <br>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No jobs match your skills right now.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>

@@ -1,6 +1,80 @@
-<h2>Dashboard</h2>
-<ul>
-    <li><a href="/view_jobs">View Jobs</a></li>
-    <li><a href="/add_job">Add Job</a></li>
-    <li><a href="/logout">Logout</a></li>
-</ul>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 30px auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .job-card {
+            background-color: #fff;
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+        .job-card h3 {
+            margin: 0;
+            font-size: 20px;
+            color: #007bff;
+        }
+        .job-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .job-card a {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #28a745;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .job-card a:hover {
+            background-color: #218838;
+        }
+        .logout {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .logout a {
+            text-decoration: none;
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logout">
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+        <h1>Welcome, {{ username }}</h1>
+        {% if jobs %}
+            {% for job in jobs %}
+                <div class="job-card">
+                    <h3>{{ job['title'] }}</h3>
+                    <p><strong>Company:</strong> {{ job['company_name'] }}</p>
+                    <p><strong>Location:</strong> {{ job['candidate_required_location'] }}</p>
+                    <a href="{{ job['url'] }}" target="_blank">Apply Now</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No jobs found right now.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

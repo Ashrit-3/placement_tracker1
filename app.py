@@ -1,120 +1,94 @@
-from flask import Flask, render_template, request, redirect, session
-import sqlite3
-import os
+from flask import Flask, render_template, request, redirect, session, url_for
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+import requests
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = "8314c819a76a41fc1d28f1507776f121"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///placement.db'
+db = SQLAlchemy(app)
 
-DB_NAME = 'placement_tracker.db'
+# ---------------- Database Model ----------------
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), nullable=False, unique=True)
+    password = db.Column(db.String(200), nullable=False)
+    skills = db.Column(db.String(300), nullable=True)
 
-# Create DB and tables if not exists
-def init_db():
-    if not os.path.exists(DB_NAME):
-        conn = sqlite3.connect(DB_NAME)
-        conn.execute('''
-            CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL,
-                email TEXT NOT NULL,
-                password TEXT NOT NULL
-            );
-        ''')
-        conn.execute('''
-            CREATE TABLE jobs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                company TEXT NOT NULL
-            );
-        ''')
-        conn.commit()
-        conn.close()
-        print("Database created.")
-    else:
-        print("Database already exists.")
+# ---------------- Live Jobs Helper ----------------
+def get_live_jobs(skills):
+    jobs = []
+    try:
+        response = requests.get("https://remotive.com/api/remote-jobs")
+        data = response.json()
+        user_skills = [s.strip().lower() for s in skills.split(",")]
 
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
+        for job in data['jobs']:
+            job_title = job.get('title', '').lower()
+            job_description = job.get('description', '').lower()
+            if any(skill in job_title or skill in job_description for skill in user_skills):
+                jobs.append({
+                    "title": job.get("title"),
+                    "company": job.get("company_name"),
+                    "url": job.get("url")
+                })
+    except Exception as e:
+        print("Error fetching live jobs:", e)
+    return jobs
 
-init_db()
-
-# Home page
-@app.route('/')
+# ---------------- Routes ----------------
+@app.route("/")
 def index():
-    return redirect('/login')
+    return redirect(url_for("login"))
 
-# Register
-@app.route('/register', methods=['GET', 'POST'])
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == 'POST':
+    if request.method == "POST":
         username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
+        password = generate_password_hash(request.form['password'])
+        skills = request.form['skills']
 
-        conn = get_db_connection()
-        conn.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-                     (username, email, password))
-        conn.commit()
-        conn.close()
-        return redirect('/login')
-    return render_template('register.html')
+        if User.query.filter_by(username=username).first():
+            return "User already exists!"
+        
+        new_user = User(username=username, password=password, skills=skills)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for("login"))
 
-# Login
-@app.route('/login', methods=['GET', 'POST'])
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
-        email = request.form['email']
+    if request.method == "POST":
+        username = request.form['username']
         password = request.form['password']
 
-        conn = get_db_connection()
-        user = conn.execute("SELECT * FROM users WHERE email = ? AND password = ?", 
-                            (email, password)).fetchone()
-        conn.close()
-
-        if user:
-            session['user_id'] = user['id']
-            return redirect('/dashboard')
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            return redirect(url_for("dashboard"))
         else:
             return "Invalid credentials"
-    return render_template('login.html')
+    return render_template("login.html")
 
-# Dashboard
-@app.route('/dashboard')
+@app.route("/dashboard")
 def dashboard():
-    if 'user_id' not in session:
-        return redirect('/login')
-    return render_template('dashboard.html')
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
-# View Jobs
-@app.route('/view_jobs')
-def view_jobs():
-    conn = get_db_connection()
-    jobs = conn.execute("SELECT * FROM jobs").fetchall()
-    conn.close()
-    return render_template('view_jobs.html', jobs=jobs)
+    user = User.query.get(session["user_id"])
+    jobs = get_live_jobs(user.skills)  # Fetch live jobs based on skills
+    return render_template("dashboard.html", user=user, jobs=jobs)
 
-# Add Job
-@app.route('/add_job', methods=['GET', 'POST'])
-def add_job():
-    if request.method == 'POST':
-        title = request.form['title']
-        company = request.form['company']
-
-        conn = get_db_connection()
-        conn.execute("INSERT INTO jobs (title, company) VALUES (?, ?)", (title, company))
-        conn.commit()
-        conn.close()
-        return redirect('/view_jobs')
-    return render_template('add_job.html')
-
-# Logout
-@app.route('/logout')
+@app.route("/logout")
 def logout():
-    session.clear()
-    return redirect('/login')
+    session.pop("user_id", None)
+    return redirect(url_for("login"))
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# ---------------- Initialize Database ----------------
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=True)

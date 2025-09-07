@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h2>Welcome, Admin!</h2>
+    <ul>
+        <li><a href="{{ url_for('add_job') }}">Add New Job</a></li>
+        <li><a href="{{ url_for('view_jobs') }}">View All Jobs</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+</body>
+</html>

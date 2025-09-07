@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow mx-auto" style="max-width: 600px;">
+  <div class="card-body">
+    <h2 class="card-title text-center">Add New Job</h2>
+    <form method="POST">
+      <div class="mb-3">
+        <label>Job Title</label>
+        <input type="text" name="title" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label>Company</label>
+        <input type="text" name="company" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label>Location</label>
+        <input type="text" name="location" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label>Skills Required (comma separated)</label>
+        <input type="text" name="skills_required" class="form-control" placeholder="e.g. Python, SQL" required>
+      </div>
+      <div class="mb-3">
+        <label>Application Link</label>
+        <input type="url" name="link" class="form-control" placeholder="https://example.com/apply" required>
+      </div>
+      <button type="submit" class="btn btn-success w-100">Add Job</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

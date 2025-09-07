@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center">
+  <h1 class="display-4">Welcome to Placement Tracker</h1>
+  <p class="lead">Find jobs & internships that match your skills.</p>
+  <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login</a>
+  <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">Register</a>
+</div>
+{% endblock %}
