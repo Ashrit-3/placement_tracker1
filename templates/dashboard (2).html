@@ -1,27 +1,49 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container mt-4">
-    <h2>Welcome, {{ user.username }}!</h2>
-    <p>Your Skills: {{ user.skills }}</p>
-
-    <h3 class="mt-4">Live Jobs Matching Your Skills</h3>
+<div class="container mt-5">
     <div class="row">
-        {% if jobs %}
-            {% for job in jobs %}
-            <div class="col-md-4 mt-3">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ job.title }}</h5>
-                        <p class="card-text">{{ job.company }}</p>
-                        <a href="{{ job.url }}" class="btn btn-primary" target="_blank">Apply Now</a>
-                    </div>
+        <div class="col-md-12 text-center">
+            <h2>Welcome, {{ user.username }} 👋</h2>
+            <p class="text-muted">Here’s your personalized placement dashboard</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- User Skills Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-lightbulb"></i> Your Skills</h5>
+                    <p class="card-text">
+                        {{ user.skills if user.skills else "No skills added yet." }}
+                    </p>
                 </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p class="mt-3">No jobs match your skills right now.</p>
-        {% endif %}
+        </div>
+
+        <!-- Jobs Card -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-briefcase"></i> Available Jobs</h5>
+                    {% if jobs %}
+                        <ul class="list-group">
+                            {% for job in jobs %}
+                                <li class="list-group-item">
+                                    <h6>{{ job['title'] }}</h6>
+                                    <small class="text-muted">{{ job['company'] }}</small><br>
+                                    <a href="{{ job['link'] }}" target="_blank" class="btn btn-sm btn-primary mt-2">
+                                        Apply Now
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No jobs available right now.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
