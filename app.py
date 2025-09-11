@@ -5,17 +5,22 @@ from flask_bcrypt import Bcrypt
 import smtplib, random, os
 from email.mime.text import MIMEText
 import requests
+from dotenv import load_dotenv
 
+# ---------------- Load environment variables ----------------
+load_dotenv()  # Loads variables from .env file if present
+
+# ---------------- Flask App ----------------
 app = Flask(__name__)
-
-# ---------------- Config ----------------
+# Use provided SECRET_KEY
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "32d7e9d20fac9c52d7f53ba3dbb897c5")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///placement.db'
+
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'   # <-- ensures login required works
+login_manager.login_view = 'login'
 
 # ---------------- User Model ----------------
 class User(UserMixin, db.Model):
@@ -56,9 +61,9 @@ def register():
         session['otp'] = otp
         session['temp_user'] = {'username': username, 'email': email, 'password': password, 'skills': skills}
 
-        # Send OTP via email
-        sender_email = os.getenv("balantrapuashrit05@gmail.com")
-        app_password = os.getenv("tlbd xqta pibx frhw")
+        # Send OTP via email using environment variables
+        sender_email = os.getenv("EMAIL_USER", "balantrapuashrit05@gmail.com")
+        app_password = os.getenv("EMAIL_PASS", "tlbdxqtapibxfrhw")  # Remove spaces
         receiver_email = email
         msg = MIMEText(f"Your OTP is {otp}")
         msg['Subject'] = "Placement Tracker OTP Verification"
