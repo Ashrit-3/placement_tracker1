@@ -1,49 +1,58 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-12 text-center">
-            <h2>Welcome, {{ user.username }} 👋</h2>
-            <p class="text-muted">Here’s your personalized placement dashboard</p>
-        </div>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Placement Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-300 via-indigo-300 to-purple-300 min-h-screen">
 
-    <div class="row mt-4">
-        <!-- User Skills Card -->
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-lightbulb"></i> Your Skills</h5>
-                    <p class="card-text">
-                        {{ user.skills if user.skills else "No skills added yet." }}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Jobs Card -->
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-briefcase"></i> Available Jobs</h5>
-                    {% if jobs %}
-                        <ul class="list-group">
-                            {% for job in jobs %}
-                                <li class="list-group-item">
-                                    <h6>{{ job['title'] }}</h6>
-                                    <small class="text-muted">{{ job['company'] }}</small><br>
-                                    <a href="{{ job['link'] }}" target="_blank" class="btn btn-sm btn-primary mt-2">
-                                        Apply Now
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p class="text-muted">No jobs available right now.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+    <div class="text-2xl font-bold text-indigo-600">Placement Tracker</div>
+    <div class="space-x-4">
+      <a href="{{ url_for('dashboard') }}" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+      <a href="{{ url_for('jobs') }}" class="text-gray-700 hover:text-indigo-600 font-medium">Live Jobs</a>
+      <a href="{{ url_for('logout') }}" class="text-red-600 hover:text-red-800 font-medium">Logout</a>
     </div>
-</div>
-{% endblock %}
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Welcome, {{ username }}!</h1>
+    <p class="text-gray-600 mb-8">This is your dashboard. Explore the latest placement opportunities and manage your profile.</p>
+
+    <!-- Dashboard Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Profile Card -->
+      <div class="p-6 bg-gradient-to-br from-purple-400 to-purple-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
+        <h2 class="font-bold text-xl mb-2">Profile</h2>
+        <p class="mb-2"><span class="font-semibold">Username:</span> {{ current_user.username }}</p>
+        <p class="mb-2"><span class="font-semibold">Email:</span> {{ current_user.email }}</p>
+        <p class="mb-2"><span class="font-semibold">Skills:</span> {{ current_user.skills if current_user.skills else "Not added" }}</p>
+        <a href="{{ url_for('profile') }}" class="mt-3 inline-block bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Edit Profile</a>
+      </div>
+
+      <!-- Live Jobs Card -->
+      <div class="p-6 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
+        <h2 class="font-bold text-xl mb-2">Live Jobs</h2>
+        <p>Check out the latest remote job openings.</p>
+        <a href="{{ url_for('jobs') }}" class="mt-3 inline-block bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">View Jobs</a>
+      </div>
+
+      <!-- Settings Card -->
+      <div class="p-6 bg-gradient-to-br from-yellow-400 to-yellow-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
+        <h2 class="font-bold text-xl mb-2">Settings</h2>
+        <p class="mb-2"><span class="font-semibold">Account Verified:</span> {{ "Yes" if current_user.otp_verified else "No" }}</p>
+        <p class="mb-2"><span class="font-semibold">Change Password:</span> <a href="{{ url_for('change_password') }}" class="underline">Click Here</a></p>
+        <p class="mb-2"><span class="font-semibold">Notifications:</span> Enabled</p>
+        <a href="{{ url_for('change_password') }}" class="mt-3 inline-block bg-white text-yellow-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Manage Settings</a>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

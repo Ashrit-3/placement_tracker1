@@ -1,26 +1,33 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="card shadow-lg p-4" style="max-width: 500px; width: 100%;">
-        <h3 class="text-center text-success mb-4">📝 Register</h3>
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Skills (comma separated)</label>
-                <input type="text" name="skills" class="form-control" placeholder="e.g. Python, SQL, Java" required>
-            </div>
-            <button type="submit" class="btn btn-success w-100">Register</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Placement Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center text-green-600 mb-6">Register</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 p-3 rounded {{ 'bg-green-100 text-green-700' if category=='success' else 'bg-red-100 text-red-700' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <form method="POST" class="space-y-4">
+            <input type="text" name="username" placeholder="Username" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400" required>
+            <input type="email" name="email" placeholder="Email" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400" required>
+            <input type="password" name="password" placeholder="Password" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400" required>
+            <input type="text" name="skills" placeholder="Your Skills (comma separated)" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400">
+            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">Register</button>
         </form>
-        <p class="text-center mt-3">
-            Already have an account? <a href="{{ url_for('login') }}">Login</a>
+        <p class="text-center mt-4 text-gray-600">Already have an account? 
+            <a href="{{ url_for('login') }}" class="text-green-600 hover:underline">Login</a>
         </p>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

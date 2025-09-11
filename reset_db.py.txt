@@ -1,0 +1,14 @@
+import os
+from app import app, db
+
+def reset_database():
+    if os.path.exists("placement.db"):
+        os.remove("placement.db")
+        print("Old database deleted")
+
+    with app.app_context():
+        db.create_all()
+        print("New database created successfully")
+
+if __name__ == "__main__":
+    reset_database()

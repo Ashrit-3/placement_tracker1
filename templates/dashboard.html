@@ -1,80 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 30px auto;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .job-card {
-            background-color: #fff;
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.1);
-        }
-        .job-card h3 {
-            margin: 0;
-            font-size: 20px;
-            color: #007bff;
-        }
-        .job-card p {
-            margin: 5px 0;
-            color: #555;
-        }
-        .job-card a {
-            display: inline-block;
-            margin-top: 10px;
-            text-decoration: none;
-            color: #fff;
-            background-color: #28a745;
-            padding: 8px 12px;
-            border-radius: 4px;
-        }
-        .job-card a:hover {
-            background-color: #218838;
-        }
-        .logout {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-        .logout a {
-            text-decoration: none;
-            color: #dc3545;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Placement Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="container">
-        <div class="logout">
-            <a href="{{ url_for('logout') }}">Logout</a>
-        </div>
-        <h1>Welcome, {{ username }}</h1>
-        {% if jobs %}
-            {% for job in jobs %}
-                <div class="job-card">
-                    <h3>{{ job['title'] }}</h3>
-                    <p><strong>Company:</strong> {{ job['company_name'] }}</p>
-                    <p><strong>Location:</strong> {{ job['candidate_required_location'] }}</p>
-                    <a href="{{ job['url'] }}" target="_blank">Apply Now</a>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>No jobs found right now.</p>
-        {% endif %}
+<body class="bg-gradient-to-br from-blue-300 via-indigo-300 to-purple-300 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+    <div class="text-2xl font-bold text-indigo-600">Placement Tracker</div>
+    <div class="space-x-4">
+      <a href="{{ url_for('dashboard') }}" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+      <a href="{{ url_for('jobs') }}" class="text-gray-700 hover:text-indigo-600 font-medium">Live Jobs</a>
+      <a href="{{ url_for('logout') }}" class="text-red-600 hover:text-red-800 font-medium">Logout</a>
     </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
+    <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Welcome, {{ username }}!</h1>
+    <p class="text-gray-600 mb-8">This is your dashboard. Explore the latest placement opportunities and manage your profile.</p>
+
+    <!-- Dashboard Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <div class="p-6 bg-gradient-to-br from-purple-400 to-purple-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
+        <h2 class="font-bold text-xl mb-2">Profile</h2>
+        <p>View and update your skills and personal info.</p>
+        <a href="{{ url_for('dashboard') }}" class="mt-3 inline-block bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Go</a>
+      </div>
+
+      <div class="p-6 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
+        <h2 class="font-bold text-xl mb-2">Live Jobs</h2>
+        <p>Check out the latest remote job openings.</p>
+        <a href="{{ url_for('jobs') }}" class="mt-3 inline-block bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Go</a>
+      </div>
+
+      <div class="p-6 bg-gradient-to-br from-yellow-400 to-yellow-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
+        <h2 class="font-bold text-xl mb-2">Settings</h2>
+        <p>Manage account settings and security options.</p>
+        <a href="{{ url_for('dashboard') }}" class="mt-3 inline-block bg-white text-yellow-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Go</a>
+      </div>
+
+    </div>
+  </div>
+
 </body>
 </html>

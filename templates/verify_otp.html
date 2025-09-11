@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Verification - Placement Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-400 via-pink-400 to-red-400 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
+    <h1 class="text-4xl font-extrabold text-center text-purple-600 mb-6">OTP Verification</h1>
+    <p class="text-center text-gray-600 mb-6">Enter the OTP sent to your email to complete registration.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 p-3 rounded {{ 'bg-green-100 text-green-700' if category=='success' else 'bg-red-100 text-red-700' }} text-center">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" class="space-y-4">
+      <input type="text" name="otp" placeholder="Enter OTP" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-700 font-medium" required>
+      <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition font-semibold">Verify OTP</button>
+    </form>
+
+    <p class="text-center mt-4 text-gray-500 text-sm">Didn't receive the OTP? Check your spam folder or <a href="{{ url_for('register') }}" class="text-purple-600 hover:underline">Resend</a></p>
+  </div>
+
+</body>
+</html>
