@@ -1,154 +1,226 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from flask_bcrypt import Bcrypt
-import smtplib, random, os
-from email.mime.text import MIMEText
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 import requests
-from dotenv import load_dotenv
+import os
+import smtplib
+import random
+from email.mime.text import MIMEText
 
-# ---------------- Load environment variables ----------------
-load_dotenv()  # Loads variables from .env file if present
-
-# ---------------- Flask App ----------------
+# -----------------------------
+# App Setup
+# -----------------------------
 app = Flask(__name__)
-# Use provided SECRET_KEY
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "32d7e9d20fac9c52d7f53ba3dbb897c5")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///placement.db'
+app.config["SECRET_KEY"] = "6f788a0945647451d74fafedfd0afe5a"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///placement.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
 
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager = LoginManager()
+login_manager.login_view = "login"
+login_manager.init_app(app)
 
-# ---------------- User Model ----------------
-class User(UserMixin, db.Model):
+# -----------------------------
+# Database Model
+# -----------------------------
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    skills = db.Column(db.String(200))
-    otp_verified = db.Column(db.Boolean, default=False)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    skills = db.Column(db.String(250), nullable=True)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
-# ---------------- Load user ----------------
+with app.app_context():
+    db.create_all()
+    print("✅ Database created or updated.")
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# ---------------- Home ----------------
-@app.route('/')
+# -----------------------------
+# OTP Email Sender
+# -----------------------------
+def send_otp_email(receiver_email: str) -> str:
+    otp = str(random.randint(100000, 999999))
+    sender_email = "balantrapuashrit05@gmail.com"
+    password = "tlbdxqtapibxfrhw"
+
+    msg = MIMEText(f"Your OTP is {otp}")
+    msg['Subject'] = "YOUR ONE TIME PASSWORD (OTP) FOR REGISTRATION"
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+        return otp
+    except Exception as e:
+        print(f"❌ Failed to send OTP: {e}")
+        return None
+
+# -----------------------------
+# Fetch JSearch Live Jobs
+# -----------------------------
+import requests
+
+def get_live_jobs(max_results=50):
+    url = "https://jsearch.p.rapidapi.com/search"
+    headers = {
+        "X-RapidAPI-Key": "6497d9551amsh7f9a699a9ddb9a8p13e61fjsnf9be9f06a4db",
+        "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
+    }
+    querystring = {
+        "query": "remote",  # Fetch remote jobs
+        "num_pages": "1"
+    }
+
+    jobs = []
+    try:
+        response = requests.get(url, headers=headers, params=querystring, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        for j in data.get("data", [])[:max_results]:
+            jobs.append({
+                "title": j.get("job_title"),
+                "company": j.get("employer_name"),
+                "location": j.get("job_city") or "Remote",
+                "url": j.get("job_apply_link"),
+                "category": j.get("job_employment_type") or "",
+                "description": (j.get("job_description") or "")[:250],
+            })
+    except requests.exceptions.RequestException as e:
+        print("❌ Error fetching JSearch jobs:", e)
+
+    return jobs
+
+
+# -----------------------------
+# Routes
+# -----------------------------
+@app.route("/")
 def home():
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    return render_template("home.html")
 
-# ---------------- Register ----------------
-@app.route('/register', methods=['GET', 'POST'])
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
-        skills = request.form['skills']
+    if request.method == "POST":
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        skills = request.form.get("skills")
+        user_otp = request.form.get("otp")
 
-        if User.query.filter((User.username == username) | (User.email == email)).first():
-            flash('Username or Email already exists!', 'danger')
-            return redirect(url_for('register'))
+        if User.query.filter_by(username=username).first():
+            flash("⚠️ Username already exists", "danger")
+            return redirect(url_for("register"))
+        if User.query.filter_by(email=email).first():
+            flash("⚠️ Email already registered", "danger")
+            return redirect(url_for("register"))
 
-        # Generate OTP
-        otp = str(random.randint(100000, 999999))
-        session['otp'] = otp
-        session['temp_user'] = {'username': username, 'email': email, 'password': password, 'skills': skills}
+        if not user_otp:
+            otp = send_otp_email(email)
+            if not otp:
+                flash("❌ Failed to send OTP. Please try again.", "danger")
+                return redirect(url_for("register"))
 
-        # Send OTP via email using environment variables
-        sender_email = os.getenv("EMAIL_USER", "balantrapuashrit05@gmail.com")
-        app_password = os.getenv("EMAIL_PASS", "tlbdxqtapibxfrhw")  # Remove spaces
-        receiver_email = email
-        msg = MIMEText(f"Your OTP is {otp}")
-        msg['Subject'] = "Placement Tracker OTP Verification"
-        msg['From'] = sender_email
-        msg['To'] = receiver_email
+            session['otp'] = otp
+            session['username'] = username
+            session['email'] = email
+            session['password'] = password
+            session['skills'] = skills
 
-        try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                server.login(sender_email, app_password)
-                server.sendmail(sender_email, receiver_email, msg.as_string())
-        except Exception as e:
-            flash(f'Failed to send OTP: {e}', 'danger')
-            return redirect(url_for('register'))
+            flash("✅ OTP sent to your email. Enter it below to verify.", "info")
+            return render_template("register.html")
 
-        flash('OTP sent to your email! Please verify.', 'info')
-        return redirect(url_for('verify_otp'))
+        if 'otp' not in session:
+            flash("❌ OTP session expired. Try registering again.", "danger")
+            return redirect(url_for("register"))
 
-    return render_template('register.html')
+        if user_otp != session['otp']:
+            flash("❌ Invalid OTP. Verification failed.", "danger")
+            return render_template("register.html")
 
-# ---------------- Verify OTP ----------------
-@app.route('/verify_otp', methods=['GET', 'POST'])
-def verify_otp():
-    if request.method == 'POST':
-        entered_otp = request.form['otp']
-        if entered_otp == session.get('otp'):
-            temp_user = session.get('temp_user')
-            new_user = User(
-                username=temp_user['username'],
-                email=temp_user['email'],
-                password=temp_user['password'],
-                skills=temp_user['skills'],
-                otp_verified=True
-            )
-            db.session.add(new_user)
-            db.session.commit()
-            session.pop('otp')
-            session.pop('temp_user')
-            flash('Registration successful! Please log in.', 'success')
-            return redirect(url_for('login'))
-        else:
-            flash('Invalid OTP. Try again.', 'danger')
-            return redirect(url_for('verify_otp'))
-    return render_template('verify_otp.html')
+        new_user = User(
+            username=session['username'],
+            email=session['email'],
+            password=generate_password_hash(session['password'], method="pbkdf2:sha256"),
+            skills=session['skills']
+        )
+        db.session.add(new_user)
+        db.session.commit()
 
-# ---------------- Login ----------------
-@app.route('/login', methods=['GET', 'POST'])
+        session.pop('otp')
+        session.pop('username')
+        session.pop('email')
+        session.pop('password')
+        session.pop('skills')
+
+        flash("🎉 Registration successful! Please login.", "success")
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
-        username_or_email = request.form['username']
-        password = request.form['password']
-        user = User.query.filter((User.username == username_or_email) | (User.email == username_or_email)).first()
-        if user and bcrypt.check_password_hash(user.password, password):
-            if not user.otp_verified:
-                flash('Please verify your email first!', 'warning')
-                return redirect(url_for('login'))
-            login_user(user)
-            return redirect(url_for('dashboard'))
-        flash('Invalid Credentials', 'danger')
-        return redirect(url_for('login'))
-    return render_template('login.html')
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        skills = request.form.get("skills")
 
-# ---------------- Dashboard ----------------
-@app.route('/dashboard')
+        user = User.query.filter_by(username=username).first()
+
+        if not user or not check_password_hash(user.password, password):
+            flash("❌ Invalid credentials", "danger")
+            return redirect(url_for("login"))
+
+        user.skills = skills
+        db.session.commit()
+
+        login_user(user)
+        flash("🎉 Logged in successfully!", "success")
+        return redirect(url_for("dashboard"))
+
+    return render_template("login.html")
+
+@app.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template('dashboard.html', username=current_user.username)
+    jobs = get_live_jobs(50)  # Fetch 50 live remote jobs
+    return render_template("dashboard.html", username=current_user.username, jobs=jobs)
 
-# ---------------- Logout ----------------
-@app.route('/logout')
+
+@app.route("/jobs")
+@app.route("/view_jobs")
+@login_required
+def jobs():
+    jobs_list = get_live_jobs(50)
+    return render_template("jobs.html", jobs=jobs_list)
+
+@app.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html", user=current_user)
+
+@app.route("/settings")
+@login_required
+def settings():
+    return render_template("settings.html", user=current_user)
+
+@app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    flash('Logged out successfully.', 'info')
-    return redirect(url_for('login'))
+    flash("👋 You have been logged out.", "info")
+    return redirect(url_for("login"))
 
-# ---------------- Live Jobs ----------------
-@app.route('/jobs')
-@login_required
-def jobs():
-    response = requests.get("https://remotive.com/api/remote-jobs")
-    jobs_data = response.json().get('jobs', [])
-    return render_template('jobs.html', jobs=jobs_data)
-
-# ---------------- Run ----------------
+# -----------------------------
+# Run App
+# -----------------------------
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)

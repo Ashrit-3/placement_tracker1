@@ -1,5 +1,8 @@
-flask
-flask_sqlalchemy
-flask_login
-requests
-gunicorn
+Flask==2.2.3
+Flask-Login==0.6.2
+Flask-Mail==0.9.1
+Flask-SQLAlchemy==2.5.1
+Flask-WTF==1.0.1
+Flask-Bootstrap==3.3.7.1
+python-dotenv==0.21.0
+requests==2.26.0

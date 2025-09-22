@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+    <div class="card-header text-white" 
+         style="background: linear-gradient(135deg, #20c997, #0dcaf0);">
+      <h4 class="mb-0"><i class="bi bi-sliders"></i> Account Settings</h4>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('settings') }}">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Update Username</label>
+          <input type="text" class="form-control rounded-3 shadow-sm" name="username" 
+                 value="{{ current_user.username }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Update Email</label>
+          <input type="email" class="form-control rounded-3 shadow-sm" name="email" 
+                 value="{{ current_user.email }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Change Password</label>
+          <input type="password" class="form-control rounded-3 shadow-sm" name="password" placeholder="Enter new password">
+        </div>
+
+        <button type="submit" class="btn btn-success px-4 rounded-pill">
+          <i class="bi bi-check-circle"></i> Save Changes
+        </button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary px-4 rounded-pill ms-2">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .form-control {
+    border: 2px solid #e9ecef;
+    transition: 0.3s;
+  }
+  .form-control:focus {
+    border-color: #20c997;
+    box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25);
+  }
+</style>
+{% endblock %}

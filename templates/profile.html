@@ -1,38 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edit Profile</title>
-<script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gradient-to-br from-blue-200 via-indigo-200 to-purple-200 min-h-screen flex items-center justify-center">
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
 
-<div class="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
-  <h1 class="text-4xl font-extrabold text-center text-indigo-600 mb-6">Edit Profile</h1>
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+    <div class="card-header text-white" 
+         style="background: linear-gradient(135deg, #0d6efd, #20c997);">
+      <h4 class="mb-0"><i class="bi bi-person-circle"></i> My Profile</h4>
+    </div>
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-4 text-center">
+          <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+               style="width: 120px; height: 120px; font-size: 3rem;">
+            {{ current_user.username[0]|upper }}
+          </div>
+          <h5 class="fw-bold">{{ current_user.username }}</h5>
+          <p class="text-muted">{{ current_user.email }}</p>
+        </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-      {% for category, message in messages %}
-      <div class="mb-4 p-3 rounded {{ 'bg-green-100 text-green-700' if category=='success' else 'bg-red-100 text-red-700' }} text-center">
-          {{ message }}
+        <div class="col-md-8">
+          <h6 class="fw-bold mb-3">Account Details</h6>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Username:</strong> {{ current_user.username }}</li>
+            <li class="list-group-item"><strong>Email:</strong> {{ current_user.email }}</li>
+            <li class="list-group-item"><strong>Joined On:</strong> {{ current_user.date_created.strftime('%B %d, %Y') }}</li>
+          </ul>
+          <div class="mt-4">
+            <a href="{{ url_for('settings') }}" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-gear"></i> Edit Settings
+            </a>
+          </div>
+        </div>
       </div>
-      {% endfor %}
-  {% endif %}
-  {% endwith %}
-
-  <form method="POST" class="space-y-4">
-      <input type="text" name="username" placeholder="Username" value="{{ current_user.username }}" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700 font-medium" required>
-      <input type="email" name="email" placeholder="Email" value="{{ current_user.email }}" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700 font-medium" required>
-      <input type="text" name="skills" placeholder="Skills" value="{{ current_user.skills }}" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-700 font-medium">
-
-      <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition font-semibold">Update Profile</button>
-  </form>
-
-  <p class="text-center mt-4 text-gray-500 text-sm">
-      <a href="{{ url_for('dashboard') }}" class="text-indigo-600 hover:underline">Back to Dashboard</a>
-  </p>
+    </div>
+  </div>
 </div>
-
-</body>
-</html>
+{% endblock %}

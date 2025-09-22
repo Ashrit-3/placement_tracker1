@@ -1,51 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Placement Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gradient-to-br from-blue-300 via-indigo-300 to-purple-300 min-h-screen">
+{% extends "base.html" %}
 
-  <!-- Navbar -->
-  <nav class="bg-white shadow-md p-4 flex justify-between items-center">
-    <div class="text-2xl font-bold text-indigo-600">Placement Tracker</div>
-    <div class="space-x-4">
-      <a href="{{ url_for('dashboard') }}" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
-      <a href="{{ url_for('jobs') }}" class="text-gray-700 hover:text-indigo-600 font-medium">Live Jobs</a>
-      <a href="{{ url_for('logout') }}" class="text-red-600 hover:text-red-800 font-medium">Logout</a>
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Paper celebration -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+  window.onload = function() {
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  }
+</script>
+
+<div class="dashboard-container" style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); min-height: 100vh; padding: 50px;">
+    <h1 style="color: #fff; text-align:center; margin-bottom: 30px;">Welcome, {{ username }}!</h1>
+    <div style="text-align:center; margin-bottom:20px;">
+        <a href="{{ url_for('profile') }}" class="btn btn-primary" style="margin-right:10px;">Profile</a>
+        <a href="{{ url_for('settings') }}" class="btn btn-warning" style="margin-right:10px;">Settings</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
     </div>
-  </nav>
 
-  <!-- Main Content -->
-  <div class="max-w-7xl mx-auto mt-10 p-6 bg-white rounded-3xl shadow-2xl">
-    <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Welcome, {{ username }}!</h1>
-    <p class="text-gray-600 mb-8">This is your dashboard. Explore the latest placement opportunities and manage your profile.</p>
+    <h2 style="color: #fff; text-align:center; margin-bottom: 20px;">Live Remote Jobs</h2>
 
-    <!-- Dashboard Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      
-      <div class="p-6 bg-gradient-to-br from-purple-400 to-purple-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
-        <h2 class="font-bold text-xl mb-2">Profile</h2>
-        <p>View and update your skills and personal info.</p>
-        <a href="{{ url_for('dashboard') }}" class="mt-3 inline-block bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Go</a>
-      </div>
-
-      <div class="p-6 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
-        <h2 class="font-bold text-xl mb-2">Live Jobs</h2>
-        <p>Check out the latest remote job openings.</p>
-        <a href="{{ url_for('jobs') }}" class="mt-3 inline-block bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Go</a>
-      </div>
-
-      <div class="p-6 bg-gradient-to-br from-yellow-400 to-yellow-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition">
-        <h2 class="font-bold text-xl mb-2">Settings</h2>
-        <p>Manage account settings and security options.</p>
-        <a href="{{ url_for('dashboard') }}" class="mt-3 inline-block bg-white text-yellow-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">Go</a>
-      </div>
-
+    {% if jobs %}
+    <div class="jobs-grid" style="display:grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); gap:20px;">
+        {% for job in jobs %}
+        <div class="job-card" style="background:#fff; border-radius:15px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;">
+            <h3>{{ job.title }}</h3>
+            <p><strong>Company:</strong> {{ job.company }}</p>
+            <p><strong>Location:</strong> {{ job.location }}</p>
+            <p><strong>Category:</strong> {{ job.category }}</p>
+            <p>{{ job.description }}...</p>
+            <a href="{{ job.url }}" target="_blank" class="btn btn-success" style="margin-top:10px;">View Job</a>
+        </div>
+        {% endfor %}
     </div>
-  </div>
+    {% else %}
+    <p style="text-align:center; color:#fff; font-size:18px;">No jobs found. Try again later.</p>
+    {% endif %}
+</div>
 
-</body>
-</html>
+<style>
+.job-card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}

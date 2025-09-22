@@ -1,11 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Placement Tracker</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center mt-5">
     <h1>Welcome to Placement Tracker</h1>
-    <a href="{{ url_for('login') }}">Login</a> | 
-    <a href="{{ url_for('register') }}">Register</a>
-</body>
-</html>
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-3">Go to Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary mt-3">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary mt-3">Login</a>
+        <a href="{{ url_for('register') }}" class="btn btn-success mt-3">Register</a>
+    {% endif %}
+</div>
+{% endblock %}

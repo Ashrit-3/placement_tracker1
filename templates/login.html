@@ -1,31 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Placement Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-        <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">Login</h1>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="mb-4 p-3 rounded {{ 'bg-green-100 text-green-700' if category=='success' else 'bg-red-100 text-red-700' }}">
-                    {{ message }}
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg rounded-4 p-4" style="background: linear-gradient(145deg, #89f7fe, #66a6ff);">
+            <h3 class="text-center mb-4">Login</h3>
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" name="username" required>
                 </div>
-            {% endfor %}
-        {% endif %}
-        {% endwith %}
-        <form method="POST" class="space-y-4">
-            <input type="text" name="username" placeholder="Username or Email" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-            <input type="password" name="password" placeholder="Password" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Login</button>
-        </form>
-        <p class="text-center mt-4 text-gray-600">Don't have an account? 
-            <a href="{{ url_for('register') }}" class="text-blue-600 hover:underline">Register</a>
-        </p>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="skills" class="form-label">Update Skills (comma separated)</label>
+                    <input type="text" class="form-control" name="skills" value="{{ current_user.skills if current_user.is_authenticated else '' }}">
+                </div>
+                <button type="submit" class="btn btn-warning w-100">Login</button>
+            </form>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% if session.get('login_success') %}
+<script>
+    celebrate();
+</script>
+{% endif %}
+{% endblock %}

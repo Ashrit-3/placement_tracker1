@@ -1,13 +1,32 @@
 {% extends "base.html" %}
+
+{% block title %}Jobs{% endblock %}
+
 {% block content %}
-<h2>All Jobs</h2>
-{% if jobs %}
-<ul>
-    {% for job in jobs %}
-    <li>{{ job.title }} at {{ job.company }} (Skills: {{ job.skills_required }})</li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No jobs available at the moment.</p>
-{% endif %}
+<div style="background: linear-gradient(135deg, #fceabb 0%, #f8b500 100%); min-height: 100vh; padding: 50px;">
+    <h1 style="text-align:center; margin-bottom:30px;">Live Remote Jobs</h1>
+
+    {% if jobs %}
+    <div style="display:grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); gap:20px;">
+        {% for job in jobs %}
+        <div style="background:#fff; border-radius:15px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;">
+            <h3>{{ job.title }}</h3>
+            <p><strong>Company:</strong> {{ job.company }}</p>
+            <p><strong>Location:</strong> {{ job.location }}</p>
+            <p><strong>Category:</strong> {{ job.category }}</p>
+            <p>{{ job.description }}...</p>
+            <a href="{{ job.url }}" target="_blank" class="btn btn-success" style="margin-top:10px;">View Job</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="text-align:center; font-size:18px;">No jobs found. Try again later.</p>
+    {% endif %}
+</div>
+
+<style>
+div:hover {
+    transform: translateY(-5px);
+}
+</style>
 {% endblock %}
