@@ -1,51 +1,23 @@
 {% extends "base.html" %}
-
-{% block title %}Dashboard{% endblock %}
-
 {% block content %}
-<!-- Paper celebration -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-<script>
-  window.onload = function() {
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-  }
-</script>
-
-<div class="dashboard-container" style="background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); min-height: 100vh; padding: 50px;">
-    <h1 style="color: #fff; text-align:center; margin-bottom: 30px;">Welcome, {{ username }}!</h1>
-    <div style="text-align:center; margin-bottom:20px;">
-        <a href="{{ url_for('profile') }}" class="btn btn-primary" style="margin-right:10px;">Profile</a>
-        <a href="{{ url_for('settings') }}" class="btn btn-warning" style="margin-right:10px;">Settings</a>
-        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
-    </div>
-
-    <h2 style="color: #fff; text-align:center; margin-bottom: 20px;">Live Remote Jobs</h2>
-
+<div class="container mt-4">
+    <h2>Welcome, {{ username }}!</h2>
+    <hr>
+    <h4>Live Remote Jobs</h4>
     {% if jobs %}
-    <div class="jobs-grid" style="display:grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); gap:20px;">
+    <div class="list-group" style="max-height: 600px; overflow-y: auto;">
         {% for job in jobs %}
-        <div class="job-card" style="background:#fff; border-radius:15px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;">
-            <h3>{{ job.title }}</h3>
-            <p><strong>Company:</strong> {{ job.company }}</p>
-            <p><strong>Location:</strong> {{ job.location }}</p>
-            <p><strong>Category:</strong> {{ job.category }}</p>
-            <p>{{ job.description }}...</p>
-            <a href="{{ job.url }}" target="_blank" class="btn btn-success" style="margin-top:10px;">View Job</a>
+        <div class="list-group-item mb-2">
+            <h5>{{ job.title }}</h5>
+            <p class="mb-1"><strong>Company:</strong> {{ job.company }} | 
+                <strong>Location:</strong> {{ job.location }}</p>
+            <p class="mb-1"><strong>Description:</strong> {{ job.description }}</p>
+            <a href="{{ job.url }}" target="_blank" class="btn btn-primary btn-sm mt-1">View Job</a>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <p style="text-align:center; color:#fff; font-size:18px;">No jobs found. Try again later.</p>
+    <p>No jobs available at the moment. Please check again later.</p>
     {% endif %}
 </div>
-
-<style>
-.job-card:hover {
-    transform: translateY(-5px);
-}
-</style>
 {% endblock %}

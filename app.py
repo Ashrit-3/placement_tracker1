@@ -5,8 +5,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import requests
 import os
-import smtplib
-from email.mime.text import MIMEText
 import random
 
 # -----------------------------
@@ -15,7 +13,7 @@ import random
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "6f788a0945647451d74fafedfd0afe5a"
 
-# Database
+# Use Postgres if available (Render), otherwise SQLite (local)
 if os.getenv("DATABASE_URL"):
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace("postgres://", "postgresql://")
 else:
@@ -47,29 +45,17 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # -----------------------------
-# OTP Email Sender
+# Fake OTP for Render
 # -----------------------------
 def send_otp_email(receiver_email: str) -> str:
     otp = str(random.randint(100000, 999999))
-    sender_email = "balantrapuashrit05@gmail.com"
-    password = "tlbdxqtapibxfrhw"
-    msg = MIMEText(f"Your OTP is {otp}")
-    msg['Subject'] = "YOUR ONE TIME PASSWORD (OTP) FOR REGISTRATION"
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, password)
-            server.sendmail(sender_email, receiver_email, msg.as_string())
-        return otp
-    except Exception as e:
-        print(f"❌ Failed to send OTP: {e}")
-        return None
+    print(f"DEBUG OTP for {receiver_email}: {otp}")  # logs OTP
+    return otp
 
 # -----------------------------
-# Fetch Jobs from JSearch
+# Fetch Jobs from JSearch (RapidAPI)
 # -----------------------------
-def get_live_jobs(query="developer", max_results=10):
+def get_live_jobs(query="software engineer", max_results=20):
     url = "https://jsearch.p.rapidapi.com/search"
     headers = {
         "X-RapidAPI-Key": os.getenv("RAPIDAPI_KEY", "6497d9551amsh7f9a699a9ddb9a8p13e61fjsnf9be9f06a4db"),
@@ -77,6 +63,7 @@ def get_live_jobs(query="developer", max_results=10):
     }
     params = {"query": query, "num_pages": 1}
     jobs = []
+
     try:
         response = requests.get(url, headers=headers, params=params, timeout=8)
         response.raise_for_status()
@@ -91,6 +78,7 @@ def get_live_jobs(query="developer", max_results=10):
             })
     except Exception as e:
         print("❌ Error fetching jobs:", e)
+
     return jobs
 
 # -----------------------------
@@ -100,7 +88,7 @@ def get_live_jobs(query="developer", max_results=10):
 def home():
     return render_template("home.html")
 
-# Registration page (show input form)
+# -------- REGISTER --------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -116,7 +104,7 @@ def register():
             flash("⚠️ Email already registered", "danger")
             return redirect(url_for("register"))
 
-        # Store temp user in session
+        # Save user data in session for verification
         session["temp_user"] = {
             "username": username,
             "email": email,
@@ -124,31 +112,25 @@ def register():
             "skills": skills
         }
 
-        # Send OTP email
+        # Fake OTP for demo
         otp = send_otp_email(email)
-        if not otp:
-            flash("❌ Failed to send OTP. Try again.", "danger")
-            return redirect(url_for("register"))
         session["otp"] = otp
-        flash("✅ OTP sent to your email. Enter it below to verify.", "info")
+
+        flash("✅ OTP generated. Enter any 6 digits to continue (demo mode).", "info")
         return redirect(url_for("verify_otp"))
 
     return render_template("register.html")
 
-# OTP verification page
+# -------- VERIFY OTP --------
 @app.route("/verify_otp", methods=["GET", "POST"])
 def verify_otp():
     if request.method == "POST":
+        user_otp = request.form.get("otp")
         if "otp" not in session or "temp_user" not in session:
-            flash("❌ Session expired, please register again.", "danger")
+            flash("❌ Session expired. Please register again.", "danger")
             return redirect(url_for("register"))
 
-        user_otp = request.form.get("otp")
-        if user_otp != session["otp"]:
-            flash("❌ Invalid OTP. Try again.", "danger")
-            return render_template("verify_otp.html")
-
-        # Create user
+        # Accept any OTP for demo
         temp_user = session["temp_user"]
         new_user = User(
             username=temp_user["username"],
@@ -161,51 +143,53 @@ def verify_otp():
 
         session.pop("otp")
         session.pop("temp_user")
+
         flash("🎉 Registration successful! Please login.", "success")
         return redirect(url_for("login"))
 
     return render_template("verify_otp.html")
 
-# Login
+# -------- LOGIN --------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         skills = request.form.get("skills")
+
         user = User.query.filter_by(username=username).first()
         if not user or not check_password_hash(user.password, password):
             flash("❌ Invalid credentials", "danger")
             return redirect(url_for("login"))
 
-        # Update skills
         user.skills = skills
         db.session.commit()
         login_user(user)
-        flash("🎉 Logged in successfully!", "success")
         return redirect(url_for("dashboard"))
+
     return render_template("login.html")
 
-# Dashboard
+# -------- DASHBOARD --------
 @app.route("/dashboard")
 @login_required
 def dashboard():
     jobs = get_live_jobs(current_user.skills or "developer", max_results=20)
     return render_template("dashboard.html", username=current_user.username, jobs=jobs)
 
-# Jobs list
+# -------- JOBS PAGE --------
 @app.route("/jobs")
 @login_required
 def jobs():
-    jobs_list = get_live_jobs(current_user.skills or "developer", max_results=20)
+    jobs_list = get_live_jobs(current_user.skills or "developer", max_results=50)
     return render_template("jobs.html", jobs=jobs_list)
 
-# Profile & Settings
+# -------- PROFILE --------
 @app.route("/profile")
 @login_required
 def profile():
     return render_template("profile.html", user=current_user)
 
+# -------- SETTINGS --------
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
@@ -224,9 +208,10 @@ def settings():
         db.session.commit()
         flash("✅ Settings updated successfully!", "success")
         return redirect(url_for("settings"))
+
     return render_template("settings.html", user=current_user)
 
-# Logout
+# -------- LOGOUT --------
 @app.route("/logout")
 @login_required
 def logout():

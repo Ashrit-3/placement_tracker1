@@ -1,32 +1,22 @@
 {% extends "base.html" %}
-
-{% block title %}Jobs{% endblock %}
-
 {% block content %}
-<div style="background: linear-gradient(135deg, #fceabb 0%, #f8b500 100%); min-height: 100vh; padding: 50px;">
-    <h1 style="text-align:center; margin-bottom:30px;">Live Remote Jobs</h1>
-
+<div class="container mt-4">
+    <h2>All Live Jobs</h2>
+    <hr>
     {% if jobs %}
-    <div style="display:grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); gap:20px;">
+    <div class="list-group" style="max-height: 700px; overflow-y: auto;">
         {% for job in jobs %}
-        <div style="background:#fff; border-radius:15px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;">
-            <h3>{{ job.title }}</h3>
-            <p><strong>Company:</strong> {{ job.company }}</p>
-            <p><strong>Location:</strong> {{ job.location }}</p>
-            <p><strong>Category:</strong> {{ job.category }}</p>
-            <p>{{ job.description }}...</p>
-            <a href="{{ job.url }}" target="_blank" class="btn btn-success" style="margin-top:10px;">View Job</a>
+        <div class="list-group-item mb-2">
+            <h5>{{ job.title }}</h5>
+            <p class="mb-1"><strong>Company:</strong> {{ job.company }} | 
+                <strong>Location:</strong> {{ job.location }}</p>
+            <p class="mb-1"><strong>Description:</strong> {{ job.description }}</p>
+            <a href="{{ job.url }}" target="_blank" class="btn btn-primary btn-sm mt-1">View Job</a>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <p style="text-align:center; font-size:18px;">No jobs found. Try again later.</p>
+    <p>No jobs available at the moment. Please check again later.</p>
     {% endif %}
 </div>
-
-<style>
-div:hover {
-    transform: translateY(-5px);
-}
-</style>
 {% endblock %}

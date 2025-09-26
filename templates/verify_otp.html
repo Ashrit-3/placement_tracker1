@@ -1,85 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify OTP</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #ffe6f0, #fff0f5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-.otp-container {
-    background: #fff;
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    width: 300px;
-    text-align: center;
-}
-h2 {
-    color: #e91e63;
-}
-input[type=text] {
-    width: 100%;
-    padding: 12px;
-    margin: 15px 0 20px 0;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    text-align: center;
-    font-size: 16px;
-}
-button {
-    width: 100%;
-    padding: 12px;
-    background-color: #e91e63;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-}
-button:hover {
-    background-color: #d81b60;
-}
-.confetti {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Verify OTP</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      overflow: hidden;
+    }
+
+    .otp-container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .otp-container h2 {
+      margin-bottom: 20px;
+      color: #ff4b6e;
+    }
+
+    .otp-inputs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .otp-inputs input {
+      width: 50px;
+      height: 50px;
+      font-size: 22px;
+      text-align: center;
+      border: 2px solid #ff4b6e;
+      border-radius: 8px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .otp-inputs input:focus {
+      border-color: #ff2e63;
+      box-shadow: 0 0 8px rgba(255, 46, 99, 0.4);
+    }
+
+    button {
+      background: #ff4b6e;
+      color: #fff;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #ff2e63;
+    }
+
+    /* Celebration Confetti */
+    .confetti {
+      position: fixed;
+      top: 0;
+      width: 10px;
+      height: 10px;
+      background-color: #ff4b6e;
+      opacity: 0.8;
+      animation: fall 3s linear infinite;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-10px) rotate(0deg); }
+      100% { transform: translateY(100vh) rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-<div class="otp-container">
-    <h2>Enter OTP</h2>
-    <form method="POST" action="{{ url_for('verify_otp') }}">
-        <input type="text" name="otp" placeholder="6-digit OTP" required>
-        <button type="submit">Verify OTP & Register</button>
+  <div class="otp-container">
+    <h2>Verify OTP</h2>
+    <form method="POST">
+      <div class="otp-inputs">
+        <input type="text" maxlength="1" required>
+        <input type="text" maxlength="1" required>
+        <input type="text" maxlength="1" required>
+        <input type="text" maxlength="1" required>
+        <input type="text" maxlength="1" required>
+        <input type="text" maxlength="1" required>
+      </div>
+      <button type="submit">Verify</button>
     </form>
-</div>
+  </div>
 
-<!-- Confetti JS -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-    // Show confetti only on success flash message
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            {% if 'success' in category %}
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                });
-            {% endif %}
-        {% endfor %}
-    {% endwith %}
-});
-</script>
+  <script>
+    // Auto focus next input
+    const inputs = document.querySelectorAll('.otp-inputs input');
+    inputs.forEach((input, idx) => {
+      input.addEventListener('input', () => {
+        if (input.value && idx < inputs.length - 1) {
+          inputs[idx + 1].focus();
+        }
+      });
+    });
+
+    // Fake celebration after pressing verify
+    const form = document.querySelector("form");
+    form.addEventListener("submit", (e) => {
+      setTimeout(() => {
+        for (let i = 0; i < 50; i++) {
+          let conf = document.createElement("div");
+          conf.className = "confetti";
+          conf.style.left = Math.random() * 100 + "vw";
+          conf.style.backgroundColor = ["#ff4b6e","#ff9a9e","#fad0c4","#fff"][Math.floor(Math.random()*4)];
+          conf.style.animationDuration = (Math.random()*3 + 2) + "s";
+          document.body.appendChild(conf);
+          setTimeout(() => conf.remove(), 5000);
+        }
+      }, 200);
+    });
+  </script>
 </body>
 </html>
